@@ -793,8 +793,7 @@ class DataAnalysisAgent(LLMAgent):
                 max_execution_time=60,
                 early_stopping_method="generate"
             )
-            
-            st.success('Ready to analyze your data!')
+
             return self.agent
         
         except Exception as e:
@@ -812,7 +811,7 @@ class DataAnalysisAgent(LLMAgent):
             except ValueError as e:
                 # Handle parsing errors more robustly
                 error_msg = str(e)
-                st.warning("Processing response with error recovery...")
+                # st.warning("Processing response with error recovery...")
                 
                 # Enhanced parsing error handling
                 if any(phrase in error_msg for phrase in [
@@ -998,9 +997,6 @@ class DataApp:
                     st.info("Make sure your file is a valid CSV with proper formatting.")
                     return None
                 
-                # Display dataframe information in sidebar
-                DataFrameUtils.display_dataframe_info(self.df)
-                
                 # Initialize components
                 self.response_processor = ResponseProcessor(self.df)
                 self.analysis_agent = DataAnalysisAgent(self.df, self.response_processor, google_api_key)
@@ -1090,65 +1086,139 @@ class DataApp:
             # Reset chat history when new file is uploaded
             st.session_state.messages = []
         
-        # Main content area
+        # Setup agent if conditions are met
         if self.df is not None and google_api_key:
-            # Setup agent if not already set up
             if self.analysis_agent and self.analysis_agent.agent is None:
                 # Update API key if changed
                 self.analysis_agent.google_api_key = google_api_key
                 self.analysis_agent.setup_agent(self.file_path)
-            
-            # Main chat interface
-            st.markdown("<h4 style='text-align: center;'>Analyze your data</h4>", unsafe_allow_html=True)
-            
-            # Chat messages container
-            chat_container = st.container()
-            
-            with chat_container:
-                # Display chat messages
-                for message in st.session_state.messages:
-                    with st.chat_message(message["role"]):
-                        st.markdown(message["content"])
-            
-            # Chat input at bottom
-            if prompt := st.chat_input("Ask me anything about your data..."):
-                # Add user message to chat history
-                st.session_state.messages.append({"role": "user", "content": prompt})
-                
-                # Display user message
-                with st.chat_message("user"):
-                    st.markdown(prompt)
-                
-                # Display assistant response
-                with st.chat_message("assistant"):
-                    if self.analysis_agent and self.analysis_agent.agent:
-                        response = self.analysis_agent.handle_chat_input(prompt)
-                        # Add assistant response to chat history
-                        st.session_state.messages.append({"role": "assistant", "content": response})
-                    else:
-                        st.error("Agent not available. Please check your API key and try again.")
         
-        elif self.df is not None and not google_api_key:
-            # Display message when API key is missing
-            st.info("💡 Please enter your Google API key in the sidebar to start analyzing your data.")
-            
-        elif not uploaded_file:
-            # Welcome screen
+        # Main content area - always show chat interface with title
+        # Always show the Analyzia title at the top center
+        st.markdown("""
+        <div style="text-align: center; padding: 1rem 0 2rem 0;">
+            <h1 style="color: white; margin-bottom: 0.5rem; font-size: 3rem; font-weight: bold;">Analyzia</h1>
+            <p style="color: #666; font-size: 1.1rem; margin: 0;">
+                AI-Powered Data Analysis Platform
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Show dataset overview if dataset is uploaded
+        if self.df is not None:
+            DataFrameUtils.display_dataframe_info(self.df)
+        
+        # Display status information if setup is incomplete
+        if not uploaded_file and not google_api_key:
+            # Welcome screen when nothing is set up
             col1, col2, col3 = st.columns([1,2,1])
             with col2:
                 st.markdown("""
-                <div style="text-align: center; padding: 4rem 0;">
-                    <h1 style="color: white; margin-bottom: 1rem;">Analyzia</h1>
+                <div style="text-align: center; padding: 1rem 0;">
                     <p style="color: #666; font-size: 1.1rem; margin-bottom: 2rem;">
                         Upload your CSV file and start analyzing your data with AI
                     </p>
                     <p style="color: #999;">
-                        👈 Get started by uploading a file in the sidebar
+                        👈 Get started by uploading a file and entering your API key in the sidebar
                     </p>
                 </div>
                 """, unsafe_allow_html=True)
+        elif not uploaded_file:
+            st.markdown("""
+            <div style="text-align: center; padding: 1rem 0;">
+                <p style="color: #0066cc; background-color: #e6f3ff; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #0066cc; margin: 0 auto; max-width: 600px;">
+                    📁 Please upload a CSV file in the sidebar to get started.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+        elif not google_api_key:
+            st.markdown("""
+            <div style="text-align: center; padding: 1rem 0;">
+                <p style="color: #0066cc; background-color: #e6f3ff; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #0066cc; margin: 0 auto; max-width: 600px;">
+                    🔑 Please enter your Google API key in the sidebar to start analyzing your data.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Chat messages container - always visible
+        chat_container = st.container()
+        
+        with chat_container:
+            # Display chat messages
+            for message in st.session_state.messages:
+                with st.chat_message(message["role"]):
+                    st.markdown(message["content"])
+        
+        # Chat input - always visible at bottom
+        if prompt := st.chat_input("Ask me anything about your data..."):
+            # Add user message to chat history
+            st.session_state.messages.append({"role": "user", "content": prompt})
             
-            # Minimal footer - only show on welcome screen
+            # Display user message
+            with st.chat_message("user"):
+                st.markdown(prompt)
+            
+            # Display assistant response with validation
+            with st.chat_message("assistant"):
+                # Check if setup is complete
+                if not uploaded_file:
+                    response = """
+🚫 **No Dataset Found**
+
+I'd love to help you analyze your data, but I don't see any dataset uploaded yet.
+
+**To get started:**
+1. 📁 Upload a CSV file using the sidebar
+2. 🔑 Enter your Google API key in the sidebar
+3. 🚀 Ask your question again
+
+Once you've uploaded your data, I can help you with:
+- Data exploration and summaries
+- Statistical analysis and correlations  
+- Beautiful visualizations and charts
+- Business insights and recommendations
+                    """
+                    st.markdown(response)
+                    st.session_state.messages.append({"role": "assistant", "content": response})
+                
+                elif not google_api_key:
+                    response = """
+🔑 **API Key Required**
+
+I can see your dataset, but I need a Google API key to analyze it for you.
+
+**To continue:**
+1. 🔑 Enter your Google API key in the sidebar (you can get one from Google AI Studio)
+2. 🚀 Ask your question again
+
+Your data is ready - I just need the API key to start the analysis!
+                    """
+                    st.markdown(response)
+                    st.session_state.messages.append({"role": "assistant", "content": response})
+                
+                elif self.analysis_agent and self.analysis_agent.agent:
+                    # Everything is set up - proceed with analysis
+                    response = self.analysis_agent.handle_chat_input(prompt)
+                    st.session_state.messages.append({"role": "assistant", "content": response})
+                
+                else:
+                    response = """
+⚠️ **Setup Issue**
+
+There seems to be an issue with the analysis setup. Please try:
+
+1. 🔄 Refresh the page
+2. 📁 Re-upload your CSV file
+3. 🔑 Re-enter your API key
+4. 🚀 Ask your question again
+
+If the problem persists, please check that your API key is valid and your CSV file is properly formatted.
+                    """
+                    st.markdown(response)
+                    st.session_state.messages.append({"role": "assistant", "content": response})
+        
+        # Footer - only show on welcome screen when nothing is uploaded
+        if not uploaded_file and not google_api_key:
             st.markdown("""
             <div style="text-align: center; padding: 2rem 0; margin-top: 4rem; border-top: 1px solid #eee; color: #999;">
                 <p style="margin: 0; font-size: 0.9rem;">Made with ❤️ by ahammadnafiz</p>
