@@ -1,0 +1,12 @@
+streamlit
+pandas
+plotly
+seaborn
+matplotlib
+numpy
+scikit-learn
+langchain
+langchain-experimental
+langchain-community
+langchain-google-genai
+python-dotenv
