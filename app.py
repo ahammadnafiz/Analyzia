@@ -1111,18 +1111,13 @@ class DataApp:
         # Display status information if setup is incomplete
         if not uploaded_file and not google_api_key:
             # Welcome screen when nothing is set up
-            col1, col2, col3 = st.columns([1,2,1])
-            with col2:
-                st.markdown("""
-                <div style="text-align: center; padding: 1rem 0;">
-                    <p style="color: #666; font-size: 1.1rem; margin-bottom: 2rem;">
-                        Upload your CSV file and start analyzing your data with AI
-                    </p>
-                    <p style="color: #999;">
-                        👈 Get started by uploading a file and entering your API key in the sidebar
-                    </p>
-                </div>
-                """, unsafe_allow_html=True)
+            st.markdown("""
+            <div style="text-align: center; padding: 1rem 0;">
+                <p style="color: #0066cc; background-color: #e6f3ff; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #0066cc; margin: 0 auto; max-width: 600px;">
+                👈 Get started by uploading a file and entering your API key in the sidebar
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
         elif not uploaded_file:
             st.markdown("""
             <div style="text-align: center; padding: 1rem 0;">
@@ -1216,14 +1211,6 @@ If the problem persists, please check that your API key is valid and your CSV fi
                     """
                     st.markdown(response)
                     st.session_state.messages.append({"role": "assistant", "content": response})
-        
-        # Footer - only show on welcome screen when nothing is uploaded
-        if not uploaded_file and not google_api_key:
-            st.markdown("""
-            <div style="text-align: center; padding: 2rem 0; margin-top: 4rem; border-top: 1px solid #eee; color: #999;">
-                <p style="margin: 0; font-size: 0.9rem;">Made with ❤️ by ahammadnafiz</p>
-            </div>
-            """, unsafe_allow_html=True)
 
 
 # Run the application
