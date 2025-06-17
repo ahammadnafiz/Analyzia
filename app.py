@@ -1017,7 +1017,7 @@ class DataApp:
         st.set_page_config(
             # layout="wide", 
             page_icon="🤖", 
-            page_title="Analixa",
+            page_title="Analyzia",
             initial_sidebar_state="expanded"
         )
         
@@ -1061,7 +1061,7 @@ class DataApp:
         
         # Sidebar with modern styling
         with st.sidebar:
-            st.markdown("# Analixa")
+            st.markdown("# Analyzia")
             st.markdown("---")
             
             # API Key section
@@ -1138,7 +1138,7 @@ class DataApp:
             with col2:
                 st.markdown("""
                 <div style="text-align: center; padding: 4rem 0;">
-                    <h1 style="color: white; margin-bottom: 1rem;">Analixa</h1>
+                    <h1 style="color: white; margin-bottom: 1rem;">Analyzia</h1>
                     <p style="color: #666; font-size: 1.1rem; margin-bottom: 2rem;">
                         Upload your CSV file and start analyzing your data with AI
                     </p>

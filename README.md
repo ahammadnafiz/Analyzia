@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🤖 Analixa
+# 🤖 Analyzia
 
 **Talk to your data. Instantly analyze, visualize, and transform.**
 
@@ -21,7 +21,7 @@
 ## 📋 Table of Contents
 
 - [✨ Features](#-features)
-- [🎯 What Makes Analixa Special](#-what-makes-analixa-special)
+- [🎯 What Makes Analyzia Special](#-what-makes-analyzia-special)
 - [🖼️ Screenshots](#️-screenshots)
 - [🚀 Quick Start](#-quick-start)
 - [⚙️ Installation](#️-installation)
@@ -67,13 +67,13 @@
 </tr>
 </table>
 
-## 🎯 What Makes Analixa Special
+## 🎯 What Makes Analyzia Special
 
 ### 🚀 **No Code Required**
 Transform complex data analysis into simple conversations. No need to write SQL queries or Python scripts.
 
 ### 🧠 **Context-Aware AI**
-Analixa understands your data structure and provides relevant insights based on your specific dataset.
+Analyzia understands your data structure and provides relevant insights based on your specific dataset.
 
 ### 📈 **Professional Reporting**
 Get comprehensive analysis reports with:
@@ -93,9 +93,9 @@ Every chart is professionally styled with:
 
 <div align="center">
 
-![Analixa Interface](assets/image.png)
+![Analyzia Interface](assets/image.png)
 
-*Analixa's intuitive interface - Upload your CSV, ask questions in natural language, and get AI-powered insights with beautiful visualizations*
+*Analyzia's intuitive interface - Upload your CSV, ask questions in natural language, and get AI-powered insights with beautiful visualizations*
 
 ### ✨ Key Interface Features:
 - 🏠 **Clean Welcome Screen** - Intuitive interface to get you started
@@ -116,8 +116,8 @@ Every chart is professionally styled with:
 ### 1️⃣ Clone the Repository
 
 ```bash
-git clone https://github.com/ahammadnafiz/Analixa.git
-cd Analixa
+git clone https://github.com/ahammadnafiz/Analyzia.git
+cd Analyzia
 ```
 
 ### 2️⃣ Install Dependencies
@@ -134,7 +134,7 @@ Create a `.env` file in the project root:
 GOOGLE_API_KEY=your_google_api_key_here
 ```
 
-### 4️⃣ Launch Analixa
+### 4️⃣ Launch Analyzia
 
 ```bash
 streamlit run app.py
@@ -152,8 +152,8 @@ streamlit run app.py
 
 ```bash
 # Clone repository
-git clone https://github.com/ahammadnafiz/Analixa.git
-cd Analixa
+git clone https://github.com/ahammadnafiz/Analyzia.git
+cd Analyzia
 
 # Create virtual environment (recommended)
 python -m venv venv
@@ -167,8 +167,8 @@ pip install -r requirements.txt
 
 ```bash
 # Clone repository
-git clone https://github.com/ahammadnafiz/Analixa.git
-cd Analixa
+git clone https://github.com/ahammadnafiz/Analyzia.git
+cd Analyzia
 
 # Install in development mode
 pip install -e .
@@ -324,8 +324,8 @@ MIT License - Free for commercial and personal use
 ### 🆘 Getting Help
 
 - **📚 Documentation**: Check this README and code comments
-- **🐛 Issues**: [GitHub Issues](https://github.com/ahammadnafiz/Analixa/issues)
-- **💡 Discussions**: [GitHub Discussions](https://github.com/ahammadnafiz/Analixa/discussions)
+- **🐛 Issues**: [GitHub Issues](https://github.com/ahammadnafiz/Analyzia/issues)
+- **💡 Discussions**: [GitHub Discussions](https://github.com/ahammadnafiz/Analyzia/discussions)
 
 ### 📞 Contact
 
