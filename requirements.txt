@@ -10,3 +10,4 @@ langchain-experimental
 langchain-community
 langchain-google-genai
 python-dotenv
+tabulate
