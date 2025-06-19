@@ -1025,10 +1025,6 @@ class DataApp:
         footer {visibility: hidden;}
         header {visibility: hidden;}
         
-        /* Sidebar styling */
-        .css-1d391kg {background-color: #f7f7f8;}
-        .css-1lcbmhc {background-color: #f7f7f8;}
-        
         /* Main content area */
         .main .block-container {
             padding-top: 2rem;
@@ -1041,16 +1037,6 @@ class DataApp:
         .stChatMessage {
             background-color: transparent;
             border: none;
-        }
-        
-        /* Remove white borders and backgrounds */
-        .stApp > div:first-child {
-            background-color: white;
-        }
-        
-        /* Sidebar content */
-        .css-1cypcdb {
-            background-color: #f7f7f8;
         }
         </style>
         """, unsafe_allow_html=True)
@@ -1097,7 +1083,7 @@ class DataApp:
         # Always show the Analyzia title at the top center
         st.markdown("""
         <div style="text-align: center; padding: 1rem 0 2rem 0;">
-            <h1 style="color: white; margin-bottom: 0.5rem; font-size: 3rem; font-weight: bold;">Analyzia</h1>
+            <h1 style="margin-bottom: 0.5rem; font-size: 3rem; font-weight: bold;">Analyzia</h1>
             <p style="color: #666; font-size: 1.1rem; margin: 0;">
                 AI-Powered Data Analysis Platform
             </p>
