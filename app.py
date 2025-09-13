@@ -1013,7 +1013,7 @@ class DataApp:
         st.set_page_config(
             page_title="Analyzia - AI Data Analysis",
             page_icon="🤖", 
-            layout="wide",
+            layout="centered",
             initial_sidebar_state="expanded",
             menu_items={
                 'Get Help': 'https://github.com/ahammadnafiz/Analyzia',
@@ -1047,13 +1047,31 @@ class DataApp:
             padding-top: 2rem;
             padding-left: 2rem;
             padding-right: 2rem;
-            max-width: none;
+            max-width: 800px;
         }
         
         /* Chat message styling */
         .stChatMessage {
             background-color: transparent;
             border: none;
+        }
+        
+        /* Chat input styling - control width */
+        .stChatInputContainer {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        /* Fixed chat input container */
+        div[data-testid="stChatInputContainer"] {
+            max-width: 800px !important;
+            margin: 0 auto !important;
+            padding: 0 1rem;
+        }
+        
+        /* Chat input field styling */
+        div[data-testid="stChatInputContainer"] > div {
+            max-width: 100% !important;
         }
         
         /* Ensure sidebar toggle button is visible */
