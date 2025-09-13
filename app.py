@@ -1011,19 +1011,36 @@ class DataApp:
         """Run the main application"""
         # Configure Streamlit page
         st.set_page_config(
-            # layout="wide", 
+            page_title="Analyzia - AI Data Analysis",
             page_icon="🤖", 
-            page_title="Analyzia",
-            initial_sidebar_state="expanded"
+            layout="wide",
+            initial_sidebar_state="expanded",
+            menu_items={
+                'Get Help': 'https://github.com/ahammadnafiz/Analyzia',
+                'Report a bug': 'https://github.com/ahammadnafiz/Analyzia/issues',
+                'About': "Analyzia - AI-Powered Data Analysis Platform"
+            }
         )
         
-        # Hide Streamlit default elements for cleaner look
+        # Hide Streamlit default elements for cleaner look while preserving functionality
         st.markdown("""
         <style>
-        /* Hide Streamlit branding */
+        /* Hide Streamlit branding but keep essential elements */
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
-        header {visibility: hidden;}
+        .stDeployButton {display: none;}
+        
+        /* Keep header visible but hide only the GitHub icon and deploy button */
+        header[data-testid="stHeader"] {
+            background-color: transparent;
+        }
+        
+        /* Ensure sidebar remains visible and functional */
+        .css-1d391kg {display: block !important;}
+        section[data-testid="stSidebar"] {
+            display: block !important;
+            visibility: visible !important;
+        }
         
         /* Main content area */
         .main .block-container {
@@ -1038,12 +1055,35 @@ class DataApp:
             background-color: transparent;
             border: none;
         }
+        
+        /* Ensure sidebar toggle button is visible */
+        button[data-testid="collapsedControl"] {
+            display: block !important;
+            visibility: visible !important;
+        }
         </style>
         """, unsafe_allow_html=True)
         
         # Sidebar with modern styling
         with st.sidebar:
-            st.markdown("# Analyzia")
+            # Add custom CSS to ensure sidebar functionality
+            st.markdown("""
+            <style>
+            /* Additional sidebar styling to ensure visibility */
+            .css-1lcbmhc.e1fqkh3o0 {
+                width: 250px !important;
+                min-width: 250px !important;
+            }
+            
+            /* Sidebar content styling */
+            .css-17eq0hr {
+                padding: 1rem;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+            
+            st.markdown("# 🤖 Analyzia")
+            st.markdown("*AI-Powered Data Analysis*")
             st.markdown("---")
             
             # API Key section
