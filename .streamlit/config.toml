@@ -4,7 +4,7 @@ developmentMode = false
 [server]
 runOnSave = true
 allowRunOnSave = true
-headless = true
+headless = false
 enableCORS = false
 enableXsrfProtection = false
 
