@@ -540,7 +540,7 @@ This framework ensures consistent delivery of high-quality data analysis that me
             
         try:
             self.google_chat = ChatGoogleGenerativeAI(
-                model="gemini-2.5-pro",
+                model="gemini-2.5-flash",
                 google_api_key=self.google_api_key,
                 temperature=0.7,
                 max_tokens=None,
