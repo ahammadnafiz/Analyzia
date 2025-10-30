@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # LangChain Imports
-from langchain_experimental.agents import create_csv_agent
+from langchain_experimental.agents.agent_toolkits import create_csv_agent
 from langchain.agents.agent_types import AgentType
 from langchain.memory import ConversationBufferMemory
 from langchain_community.callbacks.streamlit import StreamlitCallbackHandler
@@ -540,7 +540,7 @@ This framework ensures consistent delivery of high-quality data analysis that me
             
         try:
             self.google_chat = ChatGoogleGenerativeAI(
-                model="gemini-2.0-flash",
+                model="gemini-flash-lite-latest",
                 google_api_key=self.google_api_key,
                 temperature=0.7,
                 max_tokens=None,
