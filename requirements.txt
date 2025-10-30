@@ -5,9 +5,9 @@ seaborn
 matplotlib
 numpy
 scikit-learn
-langchain==0.1.20
-langchain-experimental==0.0.59
-langchain-community==0.0.38
-langchain-google-genai
+langchain==0.0.354
+langchain-experimental==0.0.47
+langchain-community==0.0.13
+langchain-google-genai==0.0.11
 python-dotenv
 tabulate
