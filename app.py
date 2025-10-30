@@ -113,8 +113,10 @@ class VisualizationHandler:
             # Sanitize code
             code = CodeUtils.sanitize_code(code)
             
-            # Create a new figure
+            # Close any existing figures to prevent duplicates
             plt.close('all')
+            
+            # Create a new figure
             fig, ax = plt.subplots(figsize=(10, 6))
             
             # Get execution context
@@ -139,6 +141,8 @@ class VisualizationHandler:
             # Display the figure if requested
             if display:
                 st.pyplot(fig)
+                # Close the figure after displaying to prevent re-rendering
+                plt.close(fig)
                 
             return True, "Visualization successfully displayed."
         except Exception as e:
@@ -154,6 +158,7 @@ class CustomPythonAstREPLTool(PythonAstREPLTool):
     
     def __init__(self, locals=None):
         super().__init__(locals=locals)
+        self._last_figure_displayed = False
     
     def _run(self, query: str) -> str:
         """Run the query in the Python REPL and capture the result."""
@@ -165,16 +170,24 @@ class CustomPythonAstREPLTool(PythonAstREPLTool):
             # Execute the code using parent method
             result = super()._run(query)
             
-            # Capture the matplotlib figure if one was created
-            if plt.get_fignums():
+            # Capture the matplotlib figure if one was created and not already displayed
+            if plt.get_fignums() and not self._last_figure_displayed:
                 current_fig = plt.gcf()
                 
-                # Create a placeholder for the figure and display it
-                fig_placeholder = st.empty()
-                fig_placeholder.pyplot(current_fig)
+                # Display the figure
+                st.pyplot(current_fig)
+                
+                # Close the figure to prevent re-rendering
+                plt.close(current_fig)
+                
+                # Mark that we've displayed this figure
+                self._last_figure_displayed = True
                 
                 # Add a success message to the result
                 result += "\n\nVisualization successfully displayed."
+            else:
+                # Reset the flag for next visualization
+                self._last_figure_displayed = False
             
             return result
         
@@ -189,17 +202,26 @@ class ResponseProcessor:
     
     def __init__(self, df):
         self.df = df
+        self.visualization_executed = False  # Track if visualization was already executed
     
     def process_response(self, response):
         """Process agent response to execute Python code visualizations."""
+        
+        # If a visualization was already executed in this response, skip
+        if self.visualization_executed:
+            self.visualization_executed = False  # Reset for next response
+            return response
         
         # Look for Python code in the response
         python_code = CodeUtils.extract_code_from_response(response)
         
         if python_code:
             try:
-                # Execute the Python code
+                # Execute the Python code only once
                 success, message = VisualizationHandler.execute_visualization_code(python_code, self.df)
+                
+                if success:
+                    self.visualization_executed = True
                 
                 # Clean up response by removing the executed code
                 cleaned_response = CodeUtils.remove_code_from_response(response, python_code)
@@ -457,41 +479,77 @@ Create exactly one professional visualization following this protocol:
 
 ### Professional Data Analysis Report Format
 
-Every response must be structured as a **comprehensive data analysis report** that includes:
+Every response must be structured as a **comprehensive data analysis report** with clear, well-formatted sections:
 
-#### 📊 **Executive Summary**
+#### 📊 Executive Summary
 - Start with a 2-3 sentence summary of the most important findings
 - Highlight the key insight that answers the user's question
 - Use clear, non-technical language for accessibility
 
-#### 🔍 **Detailed Analysis Findings**
+---
+
+#### 🔍 Detailed Analysis Findings
+
+Present your findings in a structured format:
+
+**Data Validation Results**
+
+| Metric | Value |
+|--------|-------|
+| Dataset Dimensions | [rows] × [columns] |
+| Column Data Type | [type] |
+| Missing Values | [count] |
+
+**Statistical Summary**
+
+| Statistic | Value |
+|-----------|-------|
+
+**Key Findings:**
 - Present specific numerical results with context
 - Explain statistical significance and confidence levels
 - Compare findings against benchmarks or expectations
 - Identify outliers, anomalies, or surprising patterns
 
-#### 💡 **Business Insights & Implications**
+---
+
+#### 💡 Business Insights & Implications
+
+**Key Insights:**
 - Translate statistical findings into business language
 - Explain the practical impact of the discovered patterns
 - Connect findings to potential business outcomes
 - Discuss relevance to decision-making processes
 
-#### 🎯 **Actionable Recommendations**
-- Provide specific, data-driven suggestions
-- Explain the reasoning behind each recommendation
-- Prioritize recommendations by impact and feasibility
-- Include implementation considerations
+---
 
-#### ⚠️ **Limitations & Caveats**
-- Acknowledge data quality issues or limitations
-- Explain assumptions made during analysis
-- Discuss confidence levels and uncertainty
-- Mention what additional data might improve the analysis
+#### 🎯 Actionable Recommendations
 
-#### 🔮 **Future Analysis Opportunities**
-- Suggest related questions worth exploring
-- Recommend additional data sources that could enhance insights
-- Propose follow-up analyses that could provide deeper understanding
+**Recommended Actions:**
+1. **[Action 1]:** [Explanation and reasoning]
+2. **[Action 2]:** [Explanation and reasoning]
+3. **[Action 3]:** [Explanation and reasoning]
+
+**Prioritization:** Focus on [highest priority items] first due to [reasoning]
+
+---
+
+#### ⚠️ Limitations & Caveats
+
+**Important Considerations:**
+- **Data Quality:** [Any limitations or issues noted]
+- **Assumptions:** [Assumptions made during analysis]
+- **Confidence Level:** [Statistical confidence and uncertainty]
+- **Additional Data Needed:** [What could improve the analysis]
+
+---
+
+#### 🔮 Future Analysis Opportunities
+
+**Suggested Follow-up Analyses:**
+1. [Related question or analysis to explore]
+2. [Additional data sources to consider]
+3. [Deeper investigation opportunities]
 
 ### Response Tone and Style
 - **Professional yet accessible**: Use data science terminology but explain complex concepts
@@ -499,6 +557,7 @@ Every response must be structured as a **comprehensive data analysis report** th
 - **Actionable focus**: Always connect insights to practical next steps
 - **Evidence-based**: Support every claim with specific data points
 - **Comprehensive**: Provide thorough analysis while maintaining readability
+- **Well-formatted**: Use tables, bullet points, and clear section headers
 
 ## Critical Success Factors
 
@@ -606,61 +665,97 @@ class DataAnalysisAgent(LLMAgent):
     ### Visualization Requests
     Create exactly ONE chart using these validated patterns:
     
+    **CRITICAL: Only execute visualization code ONCE. Do NOT retry or regenerate plots.**
+    
     **Distribution (Numeric):**
     ```python
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    
     if 'column' in df.columns and df['column'].dtype in ['int64', 'float64']:
         plt.figure(figsize=(10, 6))
-        sns.histplot(data=df, x='column', kde=True)
-        plt.title(f'Distribution of column')
+        sns.histplot(data=df, x='column', bins=30, kde=True, color='teal')
+        plt.title(f'Distribution of column', fontsize=16)
+        plt.xlabel('Column Name', fontsize=12)
+        plt.ylabel('Frequency', fontsize=12)
+        plt.grid(axis='y', linestyle='--', alpha=0.6)
         plt.tight_layout()
     ```
     
     **Categories (Top 10 only):**
     ```python
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    
     if 'column' in df.columns:
         top_10 = df['column'].value_counts().head(10)
         plt.figure(figsize=(10, 6))
         sns.barplot(x=top_10.values, y=top_10.index, palette='viridis')
-        plt.title(f'Top 10 Values in column')
+        plt.title(f'Top 10 Values in column', fontsize=16)
+        plt.xlabel('Count', fontsize=12)
         plt.tight_layout()
     ```
     
     **Correlation Matrix:**
     ```python
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    
     numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
     if len(numeric_cols) >= 2:
         plt.figure(figsize=(10, 8))
         sns.heatmap(df[numeric_cols].corr(), annot=True, fmt='.2f', 
-                    cmap='coolwarm', vmin=-1, vmax=1)
-        plt.title('Correlation Matrix')
+                    cmap='coolwarm', vmin=-1, vmax=1, square=True)
+        plt.title('Correlation Matrix', fontsize=16)
         plt.tight_layout()
     ```
     
     **Scatter Plot:**
     ```python
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    
     if all(col in df.columns for col in ['x_col', 'y_col']):
         if all(df[col].dtype in ['int64', 'float64'] for col in ['x_col', 'y_col']):
             plt.figure(figsize=(10, 6))
-            sns.scatterplot(data=df, x='x_col', y='y_col')
-            plt.title(f'x_col vs y_col')
+            sns.scatterplot(data=df, x='x_col', y='y_col', alpha=0.6)
+            plt.title(f'x_col vs y_col', fontsize=16)
+            plt.xlabel('X Column', fontsize=12)
+            plt.ylabel('Y Column', fontsize=12)
+            plt.grid(True, linestyle='--', alpha=0.6)
             plt.tight_layout()
     ```
+    
+    **IMPORTANT VISUALIZATION RULES:**
+    1. Always import matplotlib and seaborn at the top of your code block
+    2. Execute visualization code EXACTLY ONCE - no retries
+    3. After code execution completes, move directly to interpretation
+    4. Do NOT attempt to regenerate or re-display the plot
+    5. The framework handles display automatically
     
     ## CRITICAL CONSTRAINTS
     
     ### MUST DO:
-    - Validate all columns before use
-    - Use try-except for operations that might fail
-    - Report specific numbers from actual calculations
-    - Create exactly one visualization per request (when requested)
-    - Use professional styling: `plt.figure(figsize=(10,6))`, `plt.tight_layout()`
+    - ✅ Validate all columns exist before use
+    - ✅ Use try-except for operations that might fail
+    - ✅ Report specific numbers from actual calculations
+    - ✅ Create exactly ONE visualization per request (when requested)
+    - ✅ Use professional styling with consistent formatting
+    - ✅ Include all necessary imports (matplotlib, seaborn) in code blocks
+    - ✅ Use proper markdown formatting with tables for statistics
+    - ✅ Structure responses with clear section headers (📊, 🔍, 💡, 🎯, ⚠️, 🔮)
+    - ✅ Close figures after display to prevent memory issues
     
     ### MUST NOT DO:
-    - Reference non-existent columns
-    - Create multiple charts per response
-    - Make assumptions without data verification
-    - Use placeholder or mock data
-    - Make business recommendations without explicit data support
+    - ❌ Reference non-existent columns without validation
+    - ❌ Create multiple charts per response or retry visualization
+    - ❌ Make assumptions without data verification
+    - ❌ Use placeholder or mock data
+    - ❌ Make business recommendations without explicit data support
+    - ❌ Execute the same visualization code multiple times
+    - ❌ Use plt.show() (framework handles display automatically)
+    - ❌ Provide poorly formatted markdown without proper tables/sections
+    - ❌ Skip importing required libraries in code blocks
     
     ## ERROR HANDLING TEMPLATE
     ```python
@@ -703,40 +798,62 @@ class DataAnalysisAgent(LLMAgent):
     
     Follow these protocols exactly to ensure reliable, accurate, and comprehensive analysis reporting.
        
-    EXECUTION PROTOCOL:
+    ## EXECUTION PROTOCOL
+    
+    **CRITICAL VISUALIZATION RULES:**
+    
+    1. **ONE PLOT ONLY**: Create and execute visualization code exactly ONCE per request
+    2. **NO RETRIES**: If a visualization is displayed, do NOT attempt to regenerate it
+    3. **IMPORTS REQUIRED**: Always include necessary imports in your code block:
+       ```python
+       import matplotlib.pyplot as plt
+       import seaborn as sns
+       ```
+    4. **IMMEDIATE INTERPRETATION**: After code execution, proceed directly to analysis
+    5. **NO REDUNDANCY**: Never execute the same visualization code multiple times
     
     When generating visualization code, follow this EXACT structure:
     
-    1. FIRST check the data and verify columns
-    2. THEN create exactly ONE visualization
-    3. Use the python_repl_ast tool with this exact format:
-    
-    Action: python_repl_ast
-    Action Input:
-    # First verify columns and data types
+    **Step 1: Data Validation (Print statements only)**
+    ```python
+    # Verify columns and data types
     print("Available columns:", df.columns.tolist())
-    print("Sample data types:", df.dtypes.head())
+    print("Data types:", df.dtypes)
+    print("Missing values:", df.isna().sum())
+    ```
     
-    # Check if the requested columns exist
-    if 'column1' in df.columns and 'column2' in df.columns:
-        # Create one clear visualization
+    **Step 2: Create ONE Visualization (Execute ONCE)**
+    ```python
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    
+    # Validate column exists
+    if 'column_name' in df.columns and df['column_name'].dtype in ['int64', 'float64']:
+        # Create the visualization
         plt.figure(figsize=(10, 6))
-        # [VISUALIZATION CODE HERE]
-        plt.title('Clear Descriptive Title')
+        sns.histplot(data=df, x='column_name', bins=30, kde=True, color='teal')
+        
+        # Professional styling
+        plt.title('Distribution of Column Name', fontsize=16)
+        plt.xlabel('Column Name (Units)', fontsize=12)
+        plt.ylabel('Frequency', fontsize=12)
+        plt.grid(axis='y', linestyle='--', alpha=0.6)
         plt.tight_layout()
+        
+        print("Visualization created successfully")
     else:
-        print("Required columns not found in the dataset")
+        print("Column 'column_name' not found or not numeric")
+    ```
     
-    CRITICAL REMINDER: The visualization will display automatically after code execution. Do NOT attempt to generate another visualization if you don't see output immediately.
-    IMPORTANT EXECUTION INSTRUCTIONS:
-    When generating visualization code, use the python_repl_ast tool with this exact format:
+    **Step 3: Interpret Results (Text only - NO CODE)**
+    After visualization displays, provide analysis in markdown format without any code execution.
     
-    Action: python_repl_astsi
-    Action Input:
-    [YOUR COMPLETE PYTHON CODE]
-    
-    REMEMBER: Only attempt to create a visualization ONCE. The framework will display the output automatically.
-    After the visualization is shown, proceed to interpreting the results and providing insights.
+    **FORBIDDEN ACTIONS:**
+    - ❌ Executing visualization code multiple times
+    - ❌ Attempting to display the same plot again
+    - ❌ Creating multiple variations of the same chart
+    - ❌ Re-running code if output isn't immediately visible
+    - ❌ Using plt.show() (the framework handles display automatically)
     
     ## CRITICAL OUTPUT FORMAT REQUIREMENTS
     
