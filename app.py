@@ -156,10 +156,6 @@ class VisualizationHandler:
 class CustomPythonAstREPLTool(PythonAstREPLTool):
     """Custom Python AST REPL Tool that captures and displays matplotlib figures in Streamlit"""
     
-    def __init__(self, locals=None):
-        super().__init__(locals=locals)
-        self._last_figure_displayed = False
-    
     def _run(self, query: str) -> str:
         """Run the query in the Python REPL and capture the result."""
         try:
@@ -170,8 +166,8 @@ class CustomPythonAstREPLTool(PythonAstREPLTool):
             # Execute the code using parent method
             result = super()._run(query)
             
-            # Capture the matplotlib figure if one was created and not already displayed
-            if plt.get_fignums() and not self._last_figure_displayed:
+            # Capture the matplotlib figure if one was created
+            if plt.get_fignums():
                 current_fig = plt.gcf()
                 
                 # Display the figure
@@ -180,14 +176,8 @@ class CustomPythonAstREPLTool(PythonAstREPLTool):
                 # Close the figure to prevent re-rendering
                 plt.close(current_fig)
                 
-                # Mark that we've displayed this figure
-                self._last_figure_displayed = True
-                
                 # Add a success message to the result
                 result += "\n\nVisualization successfully displayed."
-            else:
-                # Reset the flag for next visualization
-                self._last_figure_displayed = False
             
             return result
         
